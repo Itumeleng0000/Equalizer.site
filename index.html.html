@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Equalizer Music Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #8a2be2;
+            --secondary: #00ffff;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #f0f0f0;
+            --gray: #2a2a2a;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(18, 18, 18, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .container:hover {
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+        }
+
+        .player-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .player-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border: 2px dashed rgba(138, 43, 226, 0.5);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: rgba(138, 43, 226, 0.8);
+            background: rgba(138, 43, 226, 0.1);
+        }
+
+        .upload-btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+            margin-bottom: 15px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .visualizer-container {
+            background: rgba(10, 8, 30, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .equalizer-bars {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 100%;
+            width: 100%;
+            gap: 4px;
+        }
+
+        .bar {
+            width: 20px;
+            background: linear-gradient(to top, var(--primary), var(--secondary));
+            border-radius: 5px 5px 0 0;
+            transition: height 0.1s ease;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .song-info {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .song-title {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+        }
+
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .control-btn:hover {
+            background: rgba(138, 43, 226, 0.5);
+            transform: scale(1.1);
+        }
+
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.7);
+        }
+
+        .play-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .volume-level {
+            height: 100%;
+            width: 70%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+        }
+
+        .equalizer-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(30, 30, 46, 0.7);
+            border-radius: 15px;
+        }
+
+        .equalizer-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+
+        .equalizer-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .eq-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .eq-label {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .eq-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .eq-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+        }
+
+        .eq-value {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .preset-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .preset-btn:hover {
+            background: rgba(138, 43, 226, 0.5);
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .visualizer-container {
+                height: 150px;
+            }
+            
+            .bar {
+                width: 15px;
+            }
+            
+            .control-btn {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .play-btn {
+                width: 55px;
+                height: 55px;
+            }
+            
+            .equalizer-controls {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-sliders-h"></i> IB Mawela Equalizer</h1>
+        
+        <div class="player-section">
+            <div class="upload-section">
+                <input type="file" id="file-input" accept="audio/*" style="display: none;">
+                <button class="upload-btn" id="upload-btn"><i class="fas fa-file-audio"></i> Choose Song</button>
+                <div class="file-name" id="file-name">No file selected</div>
+            </div>
+            
+            <div class="visualizer-container">
+                <div class="equalizer-bars" id="equalizer-bars"></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="song-info">
+                <div class="song-title" id="song-title">Select a song to play</div>
+                <div class="time-info">
+                    <span id="current-time">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+            
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div class="control-buttons">
+                <button class="control-btn" id="prev-btn"><i class="fas fa-step-backward"></i></button>
+                <button class="control-btn play-btn" id="play-btn"><i class="fas fa-play"></i></button>
+                <button class="control-btn" id="next-btn"><i class="fas fa-step-forward"></i></button>
+            </div>
+            
+            <div class="volume-container">
+                <span><i class="fas fa-volume-up"></i></span>
+                <div class="volume-slider" id="volume-slider">
+                    <div class="volume-level" id="volume-level"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="equalizer-section">
+            <h2 class="equalizer-title">Equalizer Controls</h2>
+            
+            <div class="equalizer-controls">
+                <div class="eq-control">
+                    <span class="eq-label">Sub Bass</span>
+                    <input type="range" min="-12" max="12" value="0" class="eq-slider" id="sub-bass">
+                    <span class="eq-value" id="sub-bass-value">0dB</span>
+                </div>
+                
+                <div class="eq-control">
+                    <span class="eq-label">Bass</span>
+                    <input type="range" min="-12" max="12" value="0" class="eq-slider" id="bass">
+                    <span class="eq-value" id="bass-value">0dB</span>
+                </div>
+                
+                <div class="eq-control">
+                    <span class="eq-label">Low Mid</span>
+                    <input type="range" min="-12" max="12" value="0" class="eq-slider" id="low-mid">
+                    <span class="eq-value" id="low-mid-value">0dB</span>
+                </div>
+                
+                <div class="eq-control">
+                    <span class="eq-label">Mid</span>
+                    <input type="range" min="-12" max="12" value="0" class="eq-slider" id="mid">
+                    <span class="eq-value" id="mid-value">0dB</span>
+                </div>
+                
+                <div class="eq-control">
+                    <span class="eq-label">High Mid</span>
+                    <input type="range" min="-12" max="12" value="0" class="eq-slider" id="high-mid">
+                    <span class="eq-value" id="high-mid-value">0dB</span>
+                </div>
+                
+                <div class="eq-control">
+                    <span class="eq-label">Presence</span>
+                    <input type="range" min="-12" max="12" value="0" class="eq-slider" id="presence">
+                    <span class="eq-value" id="presence-value">0dB</span>
+                </div>
+                
+                <div class="eq-control">
+                    <span class="eq-label">Treble</span>
+                    <input type="range" min="-12" max="12" value="0" class="eq-slider" id="treble">
+                    <span class="eq-value" id="treble-value">0dB</span>
+                </div>
+            </div>
+            
+            <div class="preset-buttons">
+                <button class="preset-btn active" data-preset="flat">Flat</button>
+                <button class="preset-btn" data-preset="bass-boost">Bass Boost</button>
+                <button class="preset-btn" data-preset="treble-boost">Treble Boost</button>
+                <button class="preset-btn" data-preset="vocal">Vocal Boost</button>
+                <button class="preset-btn" data-preset="rock">Rock</button>
+                <button class="preset-btn" data-preset="jazz">Jazz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const fileInput = document.getElementById('file-input');
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileName = document.getElementById('file-name');
+        const equalizerBars = document.getElementById('equalizer-bars');
+        const songTitle = document.getElementById('song-title');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const playBtn = document.getElementById('play-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeLevel = document.getElementById('volume-level');
+        const presetButtons = document.querySelectorAll('.preset-btn');
+
+        // Equalizer sliders and values
+        const eqSliders = {
+            'sub-bass': document.getElementById('sub-bass'),
+            'bass': document.getElementById('bass'),
+            'low-mid': document.getElementById('low-mid'),
+            'mid': document.getElementById('mid'),
+            'high-mid': document.getElementById('high-mid'),
+            'presence': document.getElementById('presence'),
+            'treble': document.getElementById('treble')
+        };
+
+        const eqValues = {
+            'sub-bass': document.getElementById('sub-bass-value'),
+            'bass': document.getElementById('bass-value'),
+            'low-mid': document.getElementById('low-mid-value'),
+            'mid': document.getElementById('mid-value'),
+            'high-mid': document.getElementById('high-mid-value'),
+            'presence': document.getElementById('presence-value'),
+            'treble': document.getElementById('treble-value')
+        };
+
+        // Audio Context and Variables
+        let audioContext;
+        let analyser;
+        let source;
+        let dataArray;
+        let bufferLength;
+        let bars = [];
+        let isPlaying = false;
+        let currentSong = null;
+
+        // Equalizer settings and filters
+        let eqSettings = {
+            'sub-bass': 0,
+            'bass': 0,
+            'low-mid': 0,
+            'mid': 0,
+            'high-mid': 0,
+            'presence': 0,
+            'treble': 0
+        };
+
+        // Create equalizer filters
+        let eqFilters = {
+            'sub-bass': null,
+            'bass': null,
+            'low-mid': null,
+            'mid': null,
+            'high-mid': null,
+            'presence': null,
+            'treble': null
+        };
+
+        // Frequency ranges for each band
+        const frequencyRanges = {
+            'sub-bass': { frequency: 60, type: 'lowshelf' },
+            'bass': { frequency: 250, type: 'peaking' },
+            'low-mid': { frequency: 500, type: 'peaking' },
+            'mid': { frequency: 1000, type: 'peaking' },
+            'high-mid': { frequency: 2000, type: 'peaking' },
+            'presence': { frequency: 4000, type: 'peaking' },
+            'treble': { frequency: 8000, type: 'highshelf' }
+        };
+
+        // Preset configurations
+        const presets = {
+            'flat': { 'sub-bass': 0, 'bass': 0, 'low-mid': 0, 'mid': 0, 'high-mid': 0, 'presence': 0, 'treble': 0 },
+            'bass-boost': { 'sub-bass': 6, 'bass': 8, 'low-mid': 4, 'mid': 0, 'high-mid': -2, 'presence': -2, 'treble': 0 },
+            'treble-boost': { 'sub-bass': -2, 'bass': -2, 'low-mid': 0, 'mid': 2, 'high-mid': 6, 'presence': 8, 'treble': 6 },
+            'vocal': { 'sub-bass': -2, 'bass': -2, 'low-mid': 2, 'mid': 4, 'high-mid': 6, 'presence': 4, 'treble': 2 },
+            'rock': { 'sub-bass': 4, 'bass': 6, 'low-mid': 4, 'mid': 2, 'high-mid': 0, 'presence': 4, 'treble': 6 },
+            'jazz': { 'sub-bass': 2, 'bass': 4, 'low-mid': 6, 'mid': 4, 'high-mid': 2, 'presence': 0, 'treble': 2 }
+        };
+
+        // Initialize the audio context
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+                
+                // Create bars for the equalizer
+                createBars();
+            }
+        }
+
+        // Create the equalizer filter chain
+        function createEqualizerFilters() {
+            if (!audioContext) return;
+            
+            // Clear existing filters
+            for (const band in eqFilters) {
+                if (eqFilters[band]) {
+                    eqFilters[band].disconnect();
+                }
+            }
+            
+            // Create new filters for each band
+            const bands = Object.keys(frequencyRanges);
+            let previousNode = source;
+            
+            for (const band of bands) {
+                const filter = audioContext.createBiquadFilter();
+                const range = frequencyRanges[band];
+                
+                filter.type = range.type;
+                filter.frequency.value = range.frequency;
+                filter.gain.value = eqSettings[band];
+                filter.Q.value = 1.0;
+                
+                // Connect to the previous node
+                previousNode.connect(filter);
+                previousNode = filter;
+                
+                eqFilters[band] = filter;
+            }
+            
+            // Connect the last filter to the analyser and destination
+            previousNode.connect(analyser);
+            analyser.connect(audioContext.destination);
+        }
+
+        // Update a specific equalizer filter
+        function updateEqualizerFilter(band) {
+            if (eqFilters[band]) {
+                eqFilters[band].gain.value = eqSettings[band];
+            }
+        }
+
+        // Create bars for the equalizer
+        function createBars() {
+            equalizerBars.innerHTML = '';
+            bars = [];
+            
+            const barCount = Math.min(bufferLength, 64); // Limit number of bars
+            
+            for (let i = 0; i < barCount; i++) {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = '5px'; // Start with minimal height
+                equalizerBars.appendChild(bar);
+                bars.push(bar);
+            }
+        }
+
+        // Update the equalizer visualization
+        function updateEqualizer() {
+            if (!analyser || !isPlaying) return;
+            
+            analyser.getByteFrequencyData(dataArray);
+            
+            for (let i = 0; i < bars.length; i++) {
+                const value = dataArray[i];
+                const height = (value / 255) * 100 + 5; // Scale to percentage with minimum height
+                bars[i].style.height = `${height}%`;
+                
+                // Add color variation based on frequency
+                const hue = (i / bars.length) * 300 + 240; // Blue to pink range
+                bars[i].style.background = `linear-gradient(to top, hsl(${hue}, 100%, 60%), hsl(${hue + 30}, 100%, 60%))`;
+            }
+            
+            requestAnimationFrame(updateEqualizer);
+        }
+
+        // Format time from seconds to MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Update progress bar and time
+        function updateProgress() {
+            if (!currentSong) return;
+            
+            const currentTime = currentSong.currentTime;
+            const duration = currentSong.duration;
+            
+            if (duration) {
+                const progressPercent = (currentTime / duration) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+                currentTimeEl.textContent = formatTime(currentTime);
+                durationEl.textContent = formatTime(duration);
+            }
+            
+            if (isPlaying) {
+                requestAnimationFrame(updateProgress);
+            }
+        }
+
+        // Apply equalizer settings to all filters
+        function applyEqualizerSettings() {
+            for (const band in eqSettings) {
+                updateEqualizerFilter(band);
+            }
+        }
+
+        // Apply a preset
+        function applyPreset(presetName) {
+            const preset = presets[presetName];
+            if (!preset) return;
+            
+            for (const band in preset) {
+                eqSettings[band] = preset[band];
+                eqSliders[band].value = preset[band];
+                eqValues[band].textContent = `${preset[band]}dB`;
+            }
+            
+            applyEqualizerSettings();
+        }
+
+        // Event Listeners
+        uploadBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                songTitle.textContent = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
+                
+                if (currentSong) {
+                    currentSong.pause();
+                }
+                
+                const objectURL = URL.createObjectURL(file);
+                currentSong = new Audio(objectURL);
+                
+                // Set up audio context and connect to analyser
+                initAudioContext();
+                if (source) {
+                    source.disconnect();
+                }
+                source = audioContext.createMediaElementSource(currentSong);
+                
+                // Create equalizer filters
+                createEqualizerFilters();
+                
+                // Set up event listeners for the audio
+                currentSong.addEventListener('loadedmetadata', () => {
+                    durationEl.textContent = formatTime(currentSong.duration);
+                });
+                
+                currentSong.addEventListener('ended', () => {
+                    isPlaying = false;
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                });
+                
+                // Reset progress bar
+                progressBar.style.width = '0%';
+                currentTimeEl.textContent = '0:00';
+            }
+        });
+
+        playBtn.addEventListener('click', () => {
+            if (!currentSong) return;
+            
+            if (isPlaying) {
+                currentSong.pause();
+                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            } else {
+                // Resume audio context if suspended (autoplay policy)
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                currentSong.play();
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                updateEqualizer();
+                updateProgress();
+            }
+            
+            isPlaying = !isPlaying;
+        });
+
+        progressContainer.addEventListener('click', (e) => {
+            if (!currentSong) return;
+            
+            const rect = progressContainer.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            currentSong.currentTime = percent * currentSong.duration;
+            progressBar.style.width = `${percent * 100}%`;
+        });
+
+        volumeSlider.addEventListener('click', (e) => {
+            if (!currentSong) return;
+            
+            const rect = volumeSlider.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            currentSong.volume = percent;
+            volumeLevel.style.width = `${percent * 100}%`;
+        });
+
+        // Equalizer slider event listeners
+        for (const band in eqSliders) {
+            eqSliders[band].addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                eqSettings[band] = value;
+                eqValues[band].textContent = `${value}dB`;
+                updateEqualizerFilter(band);
+            });
+        }
+
+        // Preset buttons
+        presetButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                presetButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const preset = button.getAttribute('data-preset');
+                applyPreset(preset);
+            });
+        });
+
+        // Initialize with some bars for visual appeal
+        initAudioContext();
+        for (let i = 0; i < bars.length; i++) {
+            const randomHeight = Math.random() * 30 + 5;
+            bars[i].style.height = `${randomHeight}%`;
+            
+            // Add initial color
+            const hue = (i / bars.length) * 300 + 240;
+            bars[i].style.background = `linear-gradient(to top, hsl(${hue}, 100%, 60%), hsl(${hue + 30}, 100%, 60%))`;
+        }
+    </script>
+</body>
+</html>
